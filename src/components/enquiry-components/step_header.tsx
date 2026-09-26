@@ -3,10 +3,10 @@ type StepHeaderProps = {
   title: string
   description?: string
   step?: number
-  total?: number
+  total?: number 
 }
 
-export default function StepHeader({ eyebrow, title, description, step, total }: StepHeaderProps) {
+export default function StepHeader({ eyebrow, title, description, step, total = 0 }: StepHeaderProps) {
   return (
     <div className="step-header">
       <div className="step-meta">

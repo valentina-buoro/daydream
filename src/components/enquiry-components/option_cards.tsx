@@ -1,7 +1,8 @@
-export default function OptionCards({ options, value, onChange, columns = 2 }) {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default function OptionCards({ options, value, onChange, columns = 2 }:any) {
   return (
     <div className={`option-grid option-grid-${columns}`}>
-      {options.map((option) => (
+      {options.map((option:any) => (
         <button
           type="button"
           key={option.value}

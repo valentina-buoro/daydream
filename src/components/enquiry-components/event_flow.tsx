@@ -4,7 +4,7 @@ import { useState } from 'react'
 import FormField from './form_field'
 import OptionCards from './option_cards'
 import StepHeader from './step_header'
-import { submitEventRequest } from '../../lib/applications'
+//import { submitEventRequest } from '../../lib/applications'
 
 const eventTypes = [
   { value: 'wedding', label: 'Wedding', icon: '♡' },
@@ -36,8 +36,8 @@ const initialForm = {
 export default function EventFlow({ onBack }:any) {
   const [form, setForm] = useState(initialForm)
   //const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading] = useState(false)
+  const [error] = useState('')
   const update = (field:any, value:any) => setForm((current) => ({ ...current, [field]: value }))
 
   const canSubmit = form.eventName && form.eventType && form.eventDate && Number(form.expectedAttendance) > 0 && Number(form.cansRequested) > 0 && form.intendedUse && form.partnershipType && form.firstName && form.lastName && form.email
@@ -80,7 +80,7 @@ export default function EventFlow({ onBack }:any) {
             <div className="field"><span className="field-label">How will Daydream be used?</span><OptionCards options={useOptions} value={form.intendedUse} onChange={(value:any) => update('intendedUse', value)} columns={2} /></div>
             <div className="field"><span className="field-label">What are you looking for?</span><OptionCards options={partnershipOptions} value={form.partnershipType} onChange={(value:any) => update('partnershipType', value)} columns={1} /></div>
             <FormField label="Event website or social media" hint="Optional"><input value={form.websiteOrSocial} onChange={(e) => update('websiteOrSocial', e.target.value)} placeholder="https://instagram.com/yourevent" /></FormField>
-            <FormField label="Anything else we should know?" hint="Optional"><textarea rows="4" value={form.notes} onChange={(e) => update('notes', e.target.value)} placeholder="Tell us a little more about the event…" /></FormField>
+            <FormField label="Anything else we should know?" hint="Optional"><textarea rows={4} value={form.notes} onChange={(e) => update('notes', e.target.value)} placeholder="Tell us a little more about the event…" /></FormField>
             <div className="section-divider"><span>CONTACT</span></div>
             <div className="two-column"><FormField label="First name"><input value={form.firstName} onChange={(e) => update('firstName', e.target.value)} /></FormField><FormField label="Last name"><input value={form.lastName} onChange={(e) => update('lastName', e.target.value)} /></FormField></div>
             <div className="two-column"><FormField label="Email"><input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} /></FormField><FormField label="Phone" hint="Optional"><input type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} /></FormField></div>
