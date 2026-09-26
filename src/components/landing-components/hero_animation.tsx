@@ -26,7 +26,7 @@ const cans = [
     delay: 0.24,
   },
   {
-    src: "../../../public/images/paloma.webp",
+    src: "/images/paloma.webp",
     alt: "Daydream Passionfruit Paloma",
     x: 145,
     y: 18,
