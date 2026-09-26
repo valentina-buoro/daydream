@@ -1,0 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=Oi&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-poppins: "Poppins", sans-serif;
+  --font-oi: "Oi", serif;
+}
+
+:root {
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: linear-gradient(90deg, #78d2d0, #8a72e3, #e797b9);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+.hero-text {
+  background: linear-gradient(
+    135deg,
+    #a7e5c5 0%,
+    #85d9db 30%,
+    #c8b6e8 60%,
+    #edc0d5 80%,
+    #f5e99b 100%
+  );
+  color: transparent;
+  background-clip: text;
+}
+
+#root {
+  max-width: 98.5%;
+  margin: 2.25% auto;
+  text-align: center;
+  background: transparent;
+  border-inline: 1px solid var(--border);
+  border-radius: 8px;
+ 
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
