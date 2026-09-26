@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 
 const cans = [
   {
-    src: "../../../public/images/blackberry.webp",
+    src: "/images/blackberry.webp",
     alt: "Daydream Blackberry Chai",
     x: -145,
     y: 18,
@@ -10,7 +10,7 @@ const cans = [
     delay: 0,
   },
   {
-    src: "../../../public/images/cucumber.webp",
+    src: "/images/cucumber.webp",
     alt: "Daydream Cucumber Lime",
     x: -52,
     y: -12,
@@ -18,7 +18,7 @@ const cans = [
     delay: 0.12,
   },
   {
-    src: "../../../public/images/peach.webp",
+    src: "/images/peach.webp",
     alt: "Daydream Peach Ginger",
     x: 52,
     y: -8,
