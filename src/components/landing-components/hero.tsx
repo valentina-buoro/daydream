@@ -11,7 +11,7 @@ const Hero = () => {
      
       <div className="w-1/2">
         <div>
-          <p style={{ fontFamily: 'font-daydream, sans-serif' }} className="text-[#171717] text-6xl text-left mb-6">
+          <p className="font-athletics font-extrabold text-[#171717] text-6xl text-left mb-6">
             Welcome to <span className="hero-text">day dream drinks </span>
             wholesale
           </p>

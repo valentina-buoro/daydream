@@ -6,7 +6,16 @@
 @theme {
   --font-poppins: "Poppins", sans-serif;
   --font-oi: "Oi", serif;
+  --font-athletics: "Athletics", sans-serif;
  
+}
+
+@font-face {
+  font-family: "Athletics";
+  src: url("./assets/font/Athletics/Athletics-ExtraBold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
