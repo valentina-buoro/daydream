@@ -3,13 +3,10 @@ import { useState } from "react";
 import FormField from "./form_field";
 import OptionCards from "./option_cards";
 import StepHeader from "./step_header";
-import { submitWholesaleApplication } from "../../lib/applications";
+import { submitWholesaleApplication } from "../../../supabase/applications";
+import type {WholesaleApplicationForm, WholesaleApplicationStatus} from "../../types/enquiry_types"
 import "./styles.css";
 
-type WholesaleApplicationStatus =
-  | 'distributor-referred'
-  | 'high-volume-wholesale'
-  | 'wholesale-pending'
 
 
 const businessTypes = [
@@ -38,7 +35,11 @@ const initialForm = {
   lastName: "",
   email: "",
   phone: "",
+
 };
+
+
+
 
 const distributors = [
   {
@@ -60,7 +61,7 @@ const distributors = [
 
 export default function WholesaleFlow({ onBack }: any) {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState <WholesaleApplicationForm>(initialForm);
   const [status, setStatus] = useState<WholesaleApplicationStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

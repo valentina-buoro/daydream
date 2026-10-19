@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import HeroAnimation from "./hero_animation";
+import '../../index.css'
 const Hero = () => {
   return (
     <>
@@ -10,7 +11,7 @@ const Hero = () => {
      
       <div className="w-1/2">
         <div>
-          <p className="text-[#171717] font-oi text-6xl text-left mb-6">
+          <p style={{ fontFamily: 'font-daydream, sans-serif' }} className="text-[#171717] text-6xl text-left mb-6">
             Welcome to <span className="hero-text">day dream drinks </span>
             wholesale
           </p>
