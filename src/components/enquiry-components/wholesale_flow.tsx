@@ -41,24 +41,6 @@ const initialForm = {
 
 
 
-const distributors = [
-  {
-    name: "Distributor One",
-    detail: "Replace with your preferred regional partner",
-    url: "#",
-  },
-  {
-    name: "Distributor Two",
-    detail: "Replace with your preferred regional partner",
-    url: "#",
-  },
-  {
-    name: "Distributor Three",
-    detail: "Replace with your preferred regional partner",
-    url: "#",
-  },
-];
-
 export default function WholesaleFlow({ onBack }: any) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState <WholesaleApplicationForm>(initialForm);
@@ -76,6 +58,7 @@ export default function WholesaleFlow({ onBack }: any) {
     form.region;
   const canContinueStep2 = true;
   const canSubmit =
+    String(form.monthlyCaseVolume).trim() !== "" &&
     Number(form.monthlyCaseVolume) >= 0 &&
     form.firstName &&
     form.lastName &&
@@ -83,7 +66,7 @@ export default function WholesaleFlow({ onBack }: any) {
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || loading) return;
     setLoading(true);
     setError("");
     try {
@@ -315,23 +298,11 @@ function WholesaleResult({ status, name, onBack }: any) {
         <div className="result-card">
           <div className="success-mark">✓</div>
           <p className="eyebrow">THANKS, {name.toUpperCase()}</p>
-          <h1>Our distributor network is the best fit.</h1>
+          <h1>Your request has been received.</h1>
           <p>
-            For orders under 10 cases per month, you can purchase Daydream
-            through one of our distributor partners. No wholesale account has
-            been created.
+            Our team will review your request and help find the best option for
+            your expected order volume. If approved, you'll receive a sign-in link.
           </p>
-          <div className="distributor-list">
-            {distributors.map((item) => (
-              <a href={item.url} key={item.name} className="distributor-row">
-                <span>
-                  <strong>{item.name}</strong>
-                  <small>{item.detail}</small>
-                </span>
-                <span>↗</span>
-              </a>
-            ))}
-          </div>
           <button className="secondary-btn wide" onClick={onBack}>
             Back to Daydream
           </button>

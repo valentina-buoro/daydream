@@ -4,7 +4,9 @@ import { useState } from 'react'
 import FormField from './form_field'
 import OptionCards from './option_cards'
 import StepHeader from './step_header'
-//import { submitEventRequest } from '../../lib/applications'
+import { submitEventRequest } from '../../../supabase/applications'
+import type { FormEvent } from 'react'
+import './styles.css'
 
 const eventTypes = [
   { value: 'wedding', label: 'Wedding', icon: '♡' },
@@ -35,23 +37,23 @@ const initialForm = {
 }
 export default function EventFlow({ onBack }:any) {
   const [form, setForm] = useState(initialForm)
-  //const [submitted, setSubmitted] = useState(false)
-  const [loading] = useState(false)
-  const [error] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const update = (field:any, value:any) => setForm((current) => ({ ...current, [field]: value }))
 
   const canSubmit = form.eventName && form.eventType && form.eventDate && Number(form.expectedAttendance) > 0 && Number(form.cansRequested) > 0 && form.intendedUse && form.partnershipType && form.firstName && form.lastName && form.email
 
-  /*const handleSubmit = async (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!canSubmit) return
+    if (!canSubmit || loading) return
     setLoading(true)
     setError('')
     try {
       await submitEventRequest(form)
       setSubmitted(true)
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.')
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -59,15 +61,14 @@ export default function EventFlow({ onBack }:any) {
 
   if (submitted) {
     return (
-      <section className="result-page"><div className="result-card"><div className="success-mark">✦</div><p className="eyebrow">REQUEST RECEIVED</p><h1>Thanks for thinking of Daydream.</h1><p>Our sampling budget for the year is closed. If approved, our partnerships team will follow up with a special offer for event sales.</p><p className="muted-note">No further action is needed.</p><button className="secondary-btn wide" onClick={onBack}>Back to Daydream</button></div></section>
+      <section className="result-page"><div className="result-card"><div className="success-mark">✦</div><p className="eyebrow">REQUEST RECEIVED</p><h1>Thanks for thinking of Daydream.</h1><p>We'll review your request. If approved, we'll email you a secure sign-in link.</p><p className="muted-note">No further action is needed.</p><button className="secondary-btn wide" onClick={onBack}>Back to Daydream</button></div></section>
     )
   }
-*/
   return (
     <section className="form-page">
       <button className="back-link" onClick={onBack}>← Back</button>
       <div className="form-card event-form-card">
-        <form onSubmit={()=>{}}>
+        <form onSubmit={handleSubmit}>
           <StepHeader eyebrow="EVENTS & PARTNERSHIPS" title="Tell us what you're planning" description="Share a few details and our partnerships team will review the request." />
           <div className="form-stack">
             <FormField label="Event name"><input value={form.eventName} onChange={(e) => update('eventName', e.target.value)} placeholder="Sunday Social" autoFocus /></FormField>

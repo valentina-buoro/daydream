@@ -16,7 +16,7 @@ function escape(value: string) {
   );
 }
 /** Delivers an administrator notification; the review link never performs a decision on GET. */
-async function notify(request: any) {
+async function notify(request: { id: string; name: string; company: string; email: string; message: string; kind: string }) {
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -28,7 +28,7 @@ async function notify(request: any) {
       from: env("EMAIL_FROM"),
       to: [env("ADMIN_EMAIL")],
       subject: "New customer access request",
-      html: `<h2>New introduction</h2><p>${escape(request.name)} — ${escape(request.company)}</p><p>${escape(request.email)}</p><p>${escape(request.message)}</p><a href="${escape(env("APP_URL"))}">Open portal to review</a>`,
+      html: `<h2>New introduction</h2><p>${escape(request.kind)}: ${escape(request.name)} — ${escape(request.company)}</p><p>${escape(request.email)}</p><p>${escape(request.message)}</p><a href="${escape(new URL("/admin", env("APP_URL")).href)}">Open portal to review</a>`,
     }),
   });
   if (!response.ok) throw new Error("Email delivery failed");
@@ -40,13 +40,14 @@ function textField(value: unknown, max: number, required = true) {
     value.length > max ||
     (required && !value.trim())
   )
-    throw new Error("Please complete all required fields");
+    throw new TypeError("Please complete all required fields");
   return value.trim();
 }
 /** Handles public requests and authenticated admin actions. Authorization always runs on the server. */
-Deno.serve(async (req: Request) => {
+export async function handleRequest(req: Request): Promise<Response> {
   const origin = req.headers.get("origin");
-  const allowed = Deno.env.get("APP_URL");
+  const appUrl = Deno.env.get("APP_URL");
+  const allowed = appUrl ? new URL(appUrl).origin : undefined;
   const headers = {
     "Access-Control-Allow-Origin": allowed || "null",
     "Access-Control-Allow-Headers":
@@ -68,13 +69,38 @@ Deno.serve(async (req: Request) => {
       env("SUPABASE_SERVICE_ROLE_KEY"),
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
-    const payload = await req.json();
+    if (Number(req.headers.get("content-length")) > 20000) return respond({ error: "Request too large" }, 413);
+    const rawBody = await req.text();
+    if (rawBody.length > 20000) return respond({ error: "Request too large" }, 413);
+    let payload;
+    try { payload = JSON.parse(rawBody); }
+    catch { return respond({ error: "Invalid JSON" }, 400); }
+    if (!payload || typeof payload !== "object") return respond({ error: "Invalid request" }, 400);
     const { action } = payload;
     if (action === "request") {
       const email = textField(payload.email, 254).toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
         return respond({ error: "Enter a valid email" }, 400);
+      if (!["business", "event"].includes(payload.kind)) return respond({ error: "Choose business or event" }, 400);
+      if (!payload.details || typeof payload.details !== "object" || Array.isArray(payload.details)) return respond({ error: "Missing request details" }, 400);
+      const details: Record<string, string | number | null> = {};
+      const required = payload.kind === "business"
+        ? ["business_name", "business_type", "region", "contact_first_name", "contact_last_name"]
+        : ["event_name", "event_type", "event_date", "intended_use", "partnership_type", "contact_first_name", "contact_last_name"];
+      for (const field of required) textField(payload.details[field], 500);
+      const numbers = payload.kind === "business" ? ["location_count", "monthly_case_volume"] : ["expected_attendance", "cans_requested"];
+      for (const field of numbers) {
+        const value = payload.details[field];
+        const min = field === "monthly_case_volume" ? 0 : 1;
+        if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value) || value < min) return respond({ error: "Enter valid quantities" }, 400);
+      }
+      for (const [key, value] of Object.entries(payload.details)) {
+        if (key.length > 60 || !(value === null || typeof value === "string" && value.length <= 2000 || typeof value === "number" && Number.isFinite(value))) return respond({ error: "Invalid request details" }, 400);
+        details[key] = value as string | number | null;
+      }
       const values = {
+        kind: payload.kind,
+        details,
         email,
         name: textField(payload.name, 120),
         company: textField(payload.company, 160),
@@ -105,6 +131,7 @@ Deno.serve(async (req: Request) => {
       /^Bearer /,
       "",
     );
+    if (!token) return respond({ error: "Sign in required" }, 401);
     const {
       data: { user },
       error: authError,
@@ -157,8 +184,11 @@ Deno.serve(async (req: Request) => {
           reviewed_at: new Date().toISOString(),
         })
         .eq("id", r.id)
-        .eq("status", "pending");
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
       if (error) throw error;
+      // The conditional update prevents a stale denial from changing an approval.
       return respond({ ok: true });
     }
     // generateLink creates the Auth identity without sending email or confirming ownership.
@@ -166,7 +196,7 @@ Deno.serve(async (req: Request) => {
     const { data: link, error: linkError } = await db.auth.admin.generateLink({
       type: "magiclink",
       email: r.email,
-      options: { redirectTo: env("APP_URL") },
+      options: { redirectTo: new URL("/account", env("APP_URL")).href },
     });
     if (linkError) throw linkError;
     const { error: finalizeError } = await db.rpc(
@@ -182,10 +212,11 @@ Deno.serve(async (req: Request) => {
     );
     const { error: mailError } = await authClient.auth.signInWithOtp({
       email: r.email,
-      options: { shouldCreateUser: false, emailRedirectTo: env("APP_URL") },
+      options: { shouldCreateUser: false, emailRedirectTo: new URL("/account", env("APP_URL")).href },
     });
     return respond({ ok: true, email_sent: !mailError });
   } catch (error) {
+    if (error instanceof TypeError && error.message === "Please complete all required fields") return respond({ error: error.message }, 400);
     console.error("Portal operation failed", error);
     return respond(
       {
@@ -195,4 +226,4 @@ Deno.serve(async (req: Request) => {
       500,
     );
   }
-});
+}

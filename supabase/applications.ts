@@ -1,27 +1,9 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
-import { supabase } from './supabase'
-
+import { portal } from '../src/lib/portal'
 import type { WholesaleApplicationForm, EventRequestForm, WholesaleApplicationStatus } from '../src/types/enquiry_types'
-
-
-
-
-
-
-const getSupabase = (): SupabaseClient => {
-  if (!supabase) {
-    throw new Error(
-      'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to .env.local.'
-    )
-  }
-
-  return supabase
-}
 
 export async function submitWholesaleApplication(
   form: WholesaleApplicationForm
 ): Promise<WholesaleApplicationStatus> {
-  const client = getSupabase()
 
   const payload = {
     business_name: form.businessName.trim(),
@@ -39,13 +21,9 @@ export async function submitWholesaleApplication(
     contact_phone: form.phone.trim() || null,
   }
 
-  const { error } = await client
-    .from('wholesale_applications')
-    .insert(payload)
-
-  if (error) {
-    throw error
-  }
+  await portal({ action: 'request', kind: 'business', email: payload.contact_email,
+    name: `${payload.contact_first_name} ${payload.contact_last_name}`,
+    company: payload.business_name, message: '', details: payload })
 
   const volume = Number(form.monthlyCaseVolume)
 
@@ -63,7 +41,6 @@ export async function submitWholesaleApplication(
 export async function submitEventRequest(
   form: EventRequestForm
 ): Promise<void> {
-  const client = getSupabase()
 
   const payload = {
     event_name: form.eventName.trim(),
@@ -81,9 +58,7 @@ export async function submitEventRequest(
     contact_phone: form.phone.trim() || null,
   }
 
-  const { error } = await client.from('event_requests').insert(payload)
-
-  if (error) {
-    throw error
-  }
+  await portal({ action: 'request', kind: 'event', email: payload.contact_email,
+    name: `${payload.contact_first_name} ${payload.contact_last_name}`,
+    company: payload.event_name, message: payload.notes || '', details: payload })
 }

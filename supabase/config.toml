@@ -1,0 +1,3 @@
+[functions.portal]
+verify_jwt = false
+entrypoint = "./functions/portal/index.ts"

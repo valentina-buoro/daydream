@@ -5,13 +5,13 @@ const Hero = () => {
   return (
     <>
      <div className="ml-auto">
-        <button className=" my-5 text-sm underline p-3 px-6">Already have an account?</button>
+        <Link to="/login" className="my-5 inline-block text-sm underline p-3 px-6">Already have an account?</Link>
       </div>
-    <section className="flex px-[10%] py-[2.5%] gap-12 items-center h-[80vh]">
+    <section className="flex flex-col px-[6%] py-10 gap-12 items-center lg:min-h-[80vh] lg:flex-row lg:px-[10%]">
      
-      <div className="w-1/2">
+      <div className="w-full lg:w-1/2">
         <div>
-          <p className="font-athletics font-extrabold text-[#171717] text-6xl text-left mb-6">
+          <p className="font-athletics font-extrabold text-[#171717] text-4xl sm:text-6xl text-left mb-6">
             Welcome to <span className="hero-text">day dream drinks </span>
             wholesale
           </p>
@@ -28,7 +28,7 @@ const Hero = () => {
       </div>
       <div
         className="
-      w-1/2
+      w-full lg:w-1/2
           rounded-[36px]
           bg-[linear-gradient(135deg,#5FCED0_0%,#669CF1_34%,#8269DC_67%,#DC87AF_100%)]
         "

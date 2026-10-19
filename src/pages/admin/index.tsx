@@ -1,15 +1,7 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
+import { getClient, portal } from '../../lib/portal'
+import type { Application } from '../../lib/portal'
 import './styles.css'
-
-interface Application {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-  message: string | null;
-  created_at: string;
-  status: "pending" | "approved" | "denied";
-}
 
 interface AdminProps {
   rows?: Application[];
@@ -17,7 +9,7 @@ interface AdminProps {
   onDecide?: (application: Application, status: "approved" | "denied") => void;
 }
 
-export default function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
+function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
   const [filter, setFilter] = useState("pending");
   const [query, setQuery] = useState("");
 
@@ -103,6 +95,9 @@ export default function Admin({ rows = [], busy = false, onDecide }: AdminProps)
             </div>
             <div className="max-[850px]:pl-[51px]">
               <p className="mt-0 mb-[7px] text-[11px] leading-[1.8] text-[#758071]">{r.message || "No additional message."}</p>
+              <dl className="mb-3 space-y-1 text-[11px]">
+                {Object.entries(r.details).map(([key, value]) => value !== null && value !== '' && <div key={key}><dt className="inline font-semibold">{key.replaceAll('_', ' ')}: </dt><dd className="inline break-words">{String(value)}</dd></div>)}
+              </dl>
               <small className="text-[9px] text-[#a0a691]">
                 {new Date(r.created_at).toLocaleDateString(undefined, {
                   month: "short",
@@ -146,3 +141,49 @@ export default function Admin({ rows = [], busy = false, onDecide }: AdminProps)
   );
 }
 
+
+export default function AdminPage() {
+  const [rows, setRows] = useState<Application[]>([])
+  const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  async function load() {
+    const data = await portal<{ requests: Application[] }>({ action: 'list' })
+    setRows(data.requests)
+  }
+  useEffect(() => {
+    let active = true
+    portal<{ requests: Application[] }>({ action: 'list' }).then(data => {
+      if (active) setRows(data.requests)
+    }).catch(err => { if (active) setError(err.message) }).finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [])
+  return <>
+    <div className="flex justify-end gap-5 p-4 text-sm">
+      <button disabled={busy} onClick={async () => { setBusy(true); setError(''); try { await load() } catch (err) { setError(err instanceof Error ? err.message : 'Could not refresh') } finally { setBusy(false) } }}>Refresh requests</button>
+      <button onClick={() => { void getClient().auth.signOut() }}>Sign out</button>
+    </div>
+    {loading && <p role="status">Loading requests…</p>}
+    {error && <p role="alert" className="p-4 text-red-800">{error}</p>}
+    {notice && <p role="status" className="p-4">{notice}</p>}
+    <Admin rows={rows} busy={busy || loading} onDecide={async (request, status) => {
+      if (busy) return
+      setBusy(true); setError(''); setNotice('')
+      try {
+        const result = await portal<{ email_sent?: boolean }>({ action: 'decide', id: request.id, status })
+        setNotice(result.email_sent === false ? 'Approved, but the sign-in email could not be sent. The customer can request a new link on the login page.' : `Request ${status}.`)
+        await load()
+      } catch (err) { setError(err instanceof Error ? err.message : 'Could not update request') }
+      finally { setBusy(false) }
+    }} />
+    {rows.filter(row => !row.notification_sent).map(row => <div className="mx-auto mb-3 text-sm" key={row.id}>
+      Email notification not sent for {row.company}. <button className="underline" disabled={busy} onClick={async () => {
+        setBusy(true); setError('')
+        try { await portal({ action: 'retry-notification', id: row.id }); await load() }
+        catch (err) { setError(err instanceof Error ? err.message : 'Email retry failed') }
+        finally { setBusy(false) }
+      }}>Retry notification</button>
+    </div>)}
+  </>
+}
