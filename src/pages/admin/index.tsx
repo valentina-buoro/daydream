@@ -1,12 +1,12 @@
 import {useEffect, useState} from 'react'
 import { getClient, portal } from '../../lib/portal'
-import type { Application } from '../../lib/portal'
+import type { CustomerRequest } from '../../types/enquiry_types'
 import './styles.css'
 
 interface AdminProps {
-  rows?: Application[];
+  rows?: CustomerRequest[];
   busy?: boolean;
-  onDecide?: (application: Application, status: "approved" | "denied") => void;
+  onDecide?: (application: CustomerRequest, status: "approved" | "denied") => void;
 }
 
 function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
@@ -14,7 +14,7 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
   const [query, setQuery] = useState("");
 
   const filtered = rows.filter(
-    (r: Application) =>
+    (r: CustomerRequest) =>
       (filter === "all" || r.status === filter) &&
       `${r.name} ${r.email} ${r.company}`
         .toLowerCase()
@@ -41,7 +41,7 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
                   : "Denied requests"}
             </span>
             <strong className="my-3 block text-[38px] font-medium">
-              {rows.filter((r: Application) => r.status === s).length}
+              {rows.filter((r: CustomerRequest) => r.status === s).length}
             </strong>
             <small className="block text-[10px] text-[#838e76]">
               {s === "pending"
@@ -77,7 +77,7 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
           <span>REQUEST DETAILS</span>
           <span>STATUS / ACTION</span>
         </div>
-        {filtered.map((r: Application) => (
+        {filtered.map((r: CustomerRequest) => (
           <article className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-5 border-t border-[#eaecdf] px-6 py-5 max-[850px]:grid-cols-1" key={r.id}>
             <div className="flex items-center gap-3">
               <div className="grid size-[39px] shrink-0 place-items-center rounded-full bg-[#e9eddc] text-[11px] text-[#76895c]">
@@ -96,7 +96,7 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
             <div className="max-[850px]:pl-[51px]">
               <p className="mt-0 mb-[7px] text-[11px] leading-[1.8] text-[#758071]">{r.message || "No additional message."}</p>
               <dl className="mb-3 space-y-1 text-[11px]">
-                {Object.entries(r.details).map(([key, value]) => value !== null && value !== '' && <div key={key}><dt className="inline font-semibold">{key.replaceAll('_', ' ')}: </dt><dd className="inline break-words">{String(value)}</dd></div>)}
+                {Object.entries(r.details).map(([key, value]) => value !== null && value !== '' && <div key={key}><dt className="inline font-semibold">{key.replace(/([A-Z])/g, ' $1').replace(/^./, character => character.toUpperCase())}: </dt><dd className="inline break-words">{String(value)}</dd></div>)}
               </dl>
               <small className="text-[9px] text-[#a0a691]">
                 {new Date(r.created_at).toLocaleDateString(undefined, {
@@ -143,18 +143,18 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
 
 
 export default function AdminPage() {
-  const [rows, setRows] = useState<Application[]>([])
+  const [rows, setRows] = useState<CustomerRequest[]>([])
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   async function load() {
-    const data = await portal<{ requests: Application[] }>({ action: 'list' })
+    const data = await portal<{ requests: CustomerRequest[] }>({ action: 'list' })
     setRows(data.requests)
   }
   useEffect(() => {
     let active = true
-    portal<{ requests: Application[] }>({ action: 'list' }).then(data => {
+    portal<{ requests: CustomerRequest[] }>({ action: 'list' }).then(data => {
       if (active) setRows(data.requests)
     }).catch(err => { if (active) setError(err.message) }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }

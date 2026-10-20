@@ -1,8 +1,4 @@
 export interface WholesaleApplicationForm {
-  id?: number
-  status?: "pending" | "approved" | "denied";
-  created_at?: string;
-  auth_user_id?: string;
   businessName: string
   businessType: string
   locationCount: string | number
@@ -40,3 +36,33 @@ export type WholesaleApplicationStatus =
   | 'distributor-referred'
   | 'high-volume-wholesale'
   | 'wholesale-pending'
+
+
+export type CustomerRequestStatus = 'pending' | 'approved' | 'denied'
+
+// Form inputs accept strings; saved quantities are always numbers.
+export type BusinessRequestDetails = Omit<WholesaleApplicationForm, 'locationCount' | 'monthlyCaseVolume'> & {
+  locationCount: number
+  monthlyCaseVolume: number
+}
+export type EventRequestDetails = Omit<EventRequestForm, 'expectedAttendance' | 'cansRequested'> & {
+  expectedAttendance: number
+  cansRequested: number
+}
+export type CustomerRequestSubmission =
+  | { kind: 'business'; details: BusinessRequestDetails }
+  | { kind: 'event'; details: EventRequestDetails }
+
+interface CustomerRequestMetadata {
+  id: string
+  name: string
+  email: string
+  company: string
+  message: string
+  status: CustomerRequestStatus
+  created_at: string
+  reviewed_at: string | null
+  reviewed_by: string | null
+  notification_sent: boolean
+}
+export type CustomerRequest = CustomerRequestMetadata & CustomerRequestSubmission

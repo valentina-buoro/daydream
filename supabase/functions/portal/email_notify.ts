@@ -1,3 +1,4 @@
+import { parseCustomerRequest, customerRequestRow, RequestValidationError } from "../_shared/customer_request.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 /** Required secrets are read only in the server runtime. Missing setup fails closed. */
 function env(name: string) {
@@ -33,23 +34,19 @@ async function notify(request: { id: string; name: string; company: string; emai
   });
   if (!response.ok) throw new Error("Email delivery failed");
 }
-/** Validates field types and limits before any database or email operation. */
-function textField(value: unknown, max: number, required = true) {
-  if (
-    typeof value !== "string" ||
-    value.length > max ||
-    (required && !value.trim())
-  )
-    throw new TypeError("Please complete all required fields");
-  return value.trim();
-}
 /** Handles public requests and authenticated admin actions. Authorization always runs on the server. */
 export async function handleRequest(req: Request): Promise<Response> {
   const origin = req.headers.get("origin");
   const appUrl = Deno.env.get("APP_URL");
-  const allowed = appUrl ? new URL(appUrl).origin : undefined;
+  const allowedOrigins = new Set(
+    [appUrl, ...(Deno.env.get("ALLOWED_ORIGINS") || "").split(",")]
+      .filter((value): value is string => Boolean(value?.trim()))
+      .map(value => new URL(value.trim()).origin),
+  );
+  const allowed = origin && allowedOrigins.has(origin) ? origin : undefined;
   const headers = {
     "Access-Control-Allow-Origin": allowed || "null",
+    "Vary": "Origin",
     "Access-Control-Allow-Headers":
       "authorization, apikey, content-type, x-client-info",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -58,7 +55,7 @@ export async function handleRequest(req: Request): Promise<Response> {
   /** Returns a JSON response with the configured CORS boundary. */
   const respond = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers });
-  if (origin && origin !== allowed)
+  if (origin && !allowedOrigins.has(origin))
     return respond({ error: "Origin not permitted" }, 403);
   if (req.method === "OPTIONS") return new Response(null, { headers });
   if (req.method !== "POST")
@@ -78,34 +75,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     if (!payload || typeof payload !== "object") return respond({ error: "Invalid request" }, 400);
     const { action } = payload;
     if (action === "request") {
-      const email = textField(payload.email, 254).toLowerCase();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-        return respond({ error: "Enter a valid email" }, 400);
-      if (!["business", "event"].includes(payload.kind)) return respond({ error: "Choose business or event" }, 400);
-      if (!payload.details || typeof payload.details !== "object" || Array.isArray(payload.details)) return respond({ error: "Missing request details" }, 400);
-      const details: Record<string, string | number | null> = {};
-      const required = payload.kind === "business"
-        ? ["business_name", "business_type", "region", "contact_first_name", "contact_last_name"]
-        : ["event_name", "event_type", "event_date", "intended_use", "partnership_type", "contact_first_name", "contact_last_name"];
-      for (const field of required) textField(payload.details[field], 500);
-      const numbers = payload.kind === "business" ? ["location_count", "monthly_case_volume"] : ["expected_attendance", "cans_requested"];
-      for (const field of numbers) {
-        const value = payload.details[field];
-        const min = field === "monthly_case_volume" ? 0 : 1;
-        if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value) || value < min) return respond({ error: "Enter valid quantities" }, 400);
-      }
-      for (const [key, value] of Object.entries(payload.details)) {
-        if (key.length > 60 || !(value === null || typeof value === "string" && value.length <= 2000 || typeof value === "number" && Number.isFinite(value))) return respond({ error: "Invalid request details" }, 400);
-        details[key] = value as string | number | null;
-      }
-      const values = {
-        kind: payload.kind,
-        details,
-        email,
-        name: textField(payload.name, 120),
-        company: textField(payload.company, 160),
-        message: textField(payload.message ?? "", 2000, false),
-      };
+      const values = customerRequestRow(parseCustomerRequest(payload));
       // Unique email prevents duplicate requests and duplicate notification spam. Do not reveal existing records.
       const { data, error } = await db
         .from("customer_requests")
@@ -216,7 +186,7 @@ export async function handleRequest(req: Request): Promise<Response> {
     });
     return respond({ ok: true, email_sent: !mailError });
   } catch (error) {
-    if (error instanceof TypeError && error.message === "Please complete all required fields") return respond({ error: error.message }, 400);
+    if (error instanceof RequestValidationError) return respond({ error: error.message }, 400);
     console.error("Portal operation failed", error);
     return respond(
       {
