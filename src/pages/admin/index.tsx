@@ -21,18 +21,18 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
         .includes(query.toLowerCase()),
   );
   return (
-    <main className="w-full  bg-[#f7f7f0] px-[55px] text-left font-['DM_Sans',sans-serif] text-[#233c34] max-[850px]:px-6 [&_button]:cursor-pointer [&_button]:transition-colors [&_button]:duration-200 [&_button:disabled]:cursor-wait [&_button:disabled]:opacity-50">
+    <main className="w-full border border-white/10 py-8 rounded-3xl bg-[linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.03))] shadow-[0_24px_70px_rgba(45,55,90,0.15),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-2xl px-13.75 text-left font-['DM_Sans',sans-serif] text-[#233c34] max-[850px]:px-6 [&_button]:cursor-pointer [&_button]:transition-colors [&_button]:duration-200 [&_button:disabled]:cursor-wait [&_button:disabled]:opacity-50">
       <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[2px]">ADMIN WORKSPACE</div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="mt-5 mb-2.5 font-['Libre_Caslon_Display',Georgia,serif] text-[52px] leading-[1.03] font-normal tracking-[-2.5px] max-[850px]:text-[42px]">A thoughtful welcome.</h1>
+          <h1 className="mt-5 mb-2.5 font-['Libre_Caslon_Display',Georgia,serif] text-[52px] leading-[1.03] font-normal tracking-[-2.5px] max-[850px]:text-[42px]">Welcome.</h1>
           <p className="m-0 text-[13px] leading-[1.8] text-[#758071]">Review introductions and decide who joins your community.</p>
         </div>
         <span className="rounded-[30px] border border-[#dce2d1] px-3.5 py-[9px] text-[11px] max-[850px]:hidden">Customer access</span>
       </div>
       <div className="my-[35px] grid grid-cols-3 gap-[18px] max-[850px]:gap-2">
         {["pending", "approved", "denied"].map((s) => (
-          <button className="rounded-lg border border-[#e0e4d6] bg-[#fffefa] p-[22px] text-left text-[#233c34] max-[850px]:p-4" key={s} onClick={() => setFilter(s)}>
+          <button className="rounded-2xl border border-white/15 bg-white/8 shadow-[0_8px_24px_rgba(45,55,90,0.06),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-md hover:bg-white/15 p-[22px] text-left text-[#233c34] max-[850px]:p-4" key={s} onClick={() => setFilter(s)}>
             <span className="block text-[11px] text-[#838e76]">
               {s === "pending"
                 ? "Awaiting review"
@@ -51,7 +51,7 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
           </button>
         ))}
       </div>
-      <div className="overflow-hidden rounded-[9px] border border-[#e0e4d6] bg-[#fffefa]">
+      <div className="overflow-hidden rounded-2xl border border-white/15 bg-white/10 shadow-[0_12px_36px_rgba(45,55,90,0.07),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-md">
         <div className="flex items-center justify-between border-b border-[#e7e9df] px-6 py-5 max-[850px]:flex-col max-[850px]:items-stretch max-[850px]:gap-[15px]">
           <div className="flex gap-[7px]">
             {["pending", "approved", "denied", "all"].map((s) => (
@@ -72,7 +72,7 @@ function Admin({ rows = [], busy = false, onDecide }: AdminProps) {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-5 bg-[#f7f8f1] px-6 py-5 text-[9px] tracking-[1px] text-[#89957c] max-[850px]:hidden">
+        <div className="grid grid-cols-[1.2fr_1fr_0.8fr] items-center gap-5 bg-white/5 px-6 py-5 text-[9px] tracking-[1px] text-[#89957c] max-[850px]:hidden">
           <span>CUSTOMER / BUSINESS</span>
           <span>REQUEST DETAILS</span>
           <span>STATUS / ACTION</span>

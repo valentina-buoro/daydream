@@ -19,6 +19,11 @@ Deno.test('portal request and authorization boundaries', async (t) => {
   let created = false;
   let finalized = false;
   let sentAfterApproval = false;
+  let eligible = true;
+  let generatedCount = 0;
+  let loginEmailCount = 0;
+  let redirectTo = '';
+  const actionLink = 'https://project.example.com/auth/v1/verify?token=secret-test-token&type=signup';
   globalThis.fetch = async (input, init) => {
     const url = String(input instanceof Request ? input.url : input);
     const method = init?.method || 'GET';
@@ -28,10 +33,24 @@ Deno.test('portal request and authorization boundaries', async (t) => {
     if (url.includes('/customer_requests') && method === 'POST') { created = true; return json({ ...JSON.parse(String(init?.body)), id: 'request-id' }); }
     if (url.includes('/customer_requests') && method === 'PATCH') return new Response(null, { status: 204 });
     if (url.includes('/customer_requests')) return json({ ...submission, id: 'request-id', status: 'pending' });
-    if (url.includes('api.resend.com')) return json({}, mailFails ? 500 : 200);
-    if (url.includes('/admin/generate_link')) return json({ id: 'customer-id', email, properties: {} });
+    if (url.includes('api.resend.com')) {
+      const body = JSON.parse(String(init?.body));
+      if (body.subject === 'Your Daydream sign-in link') {
+        assert(body.to[0] === email);
+        assert(body.text.includes(actionLink));
+        loginEmailCount++;
+        sentAfterApproval = finalized;
+      }
+      return json({}, mailFails ? 500 : 200);
+    }
+    if (url.includes('/admin/generate_link')) {
+      generatedCount++;
+      redirectTo = new URL(url).searchParams.get('redirect_to') || '';
+      return json({ id: 'customer-id', email, email_confirmed_at: null, action_link: actionLink, verification_type: 'signup' });
+    }
+    if (url.includes('/rpc/reserve_portal_login')) return json(eligible ? 'customer-id' : null);
     if (url.includes('/rpc/finalize_customer_approval')) { finalized = true; return new Response(null, { status: 204 }); }
-    if (url.includes('/auth/v1/otp')) { sentAfterApproval = finalized; return json({}); }
+    if (url.includes('/auth/v1/otp')) throw new Error('Unconfirmed accounts must not use public OTP signup');
     throw new Error(`Unexpected fetch: ${method} ${url}`);
   };
   try {
@@ -69,9 +88,34 @@ Deno.test('portal request and authorization boundaries', async (t) => {
       assert(!finalized);
     });
     await t.step('finalizes approval before sending customer login email', async () => {
-      admin = true;
+      admin = true; mailFails = false;
       const response = await handleRequest(request({ action: 'decide', id: 'request-id', status: 'approved' }, 'admin-token'));
       assert(response.status === 200); assert(finalized); assert(sentAfterApproval);
+      assert((await response.json()).email_sent === true);
+    });
+    await t.step('approved unconfirmed customers receive the generated verification link from login', async () => {
+      const before = loginEmailCount;
+      const response = await handleRequest(request({ action: 'login', email }));
+      assert(response.status === 200 && loginEmailCount === before + 1);
+      assert(redirectTo === 'https://app.example.com/account');
+      assert(!(await response.text()).includes('secret-test-token'));
+    });
+    await t.step('localhost admin login uses only the allowed origin and fixed admin path', async () => {
+      const response = await handleRequest(new Request('https://example.com', { method: 'POST', headers: { origin: 'http://localhost:5173' }, body: JSON.stringify({ action: 'login', email, next: 'admin', redirectTo: 'https://attacker.example' }) }));
+      assert(response.status === 200 && redirectTo === 'http://localhost:5173/admin');
+    });
+    await t.step('ineligible and cooldown requests never generate or send links', async () => {
+      eligible = false;
+      const before = generatedCount;
+      const response = await handleRequest(request({ action: 'login', email }));
+      assert(response.status === 200 && generatedCount === before);
+      eligible = true;
+    });
+    await t.step('failed approval email keeps approval saved', async () => {
+      mailFails = true;
+      const response = await handleRequest(request({ action: 'decide', id: 'request-id', status: 'approved' }, 'admin-token'));
+      assert(response.status === 200 && finalized);
+      assert((await response.json()).email_sent === false);
     });
   } finally { globalThis.fetch = originalFetch; }
 });

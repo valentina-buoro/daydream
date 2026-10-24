@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { getClient } from '../../lib/portal'
+import { portal } from '../../lib/portal'
 
 export default function Login() {
   const [busy, setBusy] = useState(false)
@@ -16,14 +16,10 @@ export default function Login() {
       const email = String(new FormData(event.currentTarget).get('email')).trim().toLowerCase()
       setBusy(true); setMessage(''); setError('')
       try {
-        const { error } = await getClient().auth.signInWithOtp({ email, options: {
-          shouldCreateUser: false,
-          emailRedirectTo: new URL(params.get('next') === 'admin' ? '/admin' : '/account', window.location.origin).href,
-        } })
-        if (error) throw error
-        setMessage('If your account is eligible, check your inbox for a sign-in link.')
-      } catch {
-        setError('Unable to send a link. Check your approved email address and try again shortly.')
+        await portal({ action: 'login', email, next: params.get('next') === 'admin' ? 'admin' : 'account' })
+        setMessage('If your account is eligible, check your inbox for a sign-in link. Please wait at least a minute before requesting another.')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unable to send a link. Please try again shortly.')
       } finally { setBusy(false) }
     }}>
       <label className="block">Email address<input className="mt-2 mb-4 block w-full rounded border border-[#dce0d3] p-3" name="email" type="email" autoComplete="email" required /></label>

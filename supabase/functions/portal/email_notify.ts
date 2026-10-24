@@ -34,6 +34,22 @@ async function notify(request: { id: string; name: string; company: string; emai
   });
   if (!response.ok) throw new Error("Email delivery failed");
 }
+/** Deliver the generated verification URL, including initial signup confirmation links.
+ * Generating a link does not verify ownership; clicking it does. Never log the URL.
+ */
+async function sendLoginLink(email: string, actionLink: string) {
+  if (!actionLink) throw new Error("Missing generated verification link");
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env("RESEND_API_KEY")}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: env("EMAIL_FROM"), to: [email], subject: "Your Daydream sign-in link",
+      html: `<h2>Welcome to Daydream</h2><p>Use this single-use link to verify your email and sign in.</p><p><a href="${escape(actionLink)}">Sign in to Daydream</a></p><p>If you did not request this, you can ignore this email.</p>`,
+      text: `Verify your email and sign in to Daydream: ${actionLink}\nIf you did not request this, you can ignore this email.`,
+    }),
+  });
+  if (!response.ok) throw new Error(`Login email delivery failed (${response.status})`);
+}
 /** Handles public requests and authenticated admin actions. Authorization always runs on the server. */
 export async function handleRequest(req: Request): Promise<Response> {
   const origin = req.headers.get("origin");
@@ -95,6 +111,24 @@ export async function handleRequest(req: Request): Promise<Response> {
       } catch {
         console.error("Application saved; notification needs retry", data.id);
       }
+      return respond({ ok: true });
+    }
+    if (action === "login") {
+      if (typeof payload.email !== "string" || payload.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())) {
+        return respond({ error: "Enter a valid email" }, 400);
+      }
+      const email = payload.email.trim().toLowerCase();
+      // Unknown accounts and requests inside the cooldown receive the same result.
+      const { data: eligibleId, error: reservationError } = await db.rpc("reserve_portal_login", { login_email: email });
+      if (reservationError) throw reservationError;
+      if (!eligibleId) return respond({ ok: true });
+      const redirectTo = new URL(payload.next === "admin" ? "/admin" : "/account", allowed || env("APP_URL")).href;
+      const { data: link, error: linkError } = await db.auth.admin.generateLink({
+        type: "magiclink", email, options: { redirectTo },
+      });
+      if (linkError) throw new Error(`Login link generation failed (${linkError.code || linkError.status})`);
+      if (link.user.id !== eligibleId) throw new Error("Login identity mismatch");
+      await sendLoginLink(email, link.properties.action_link);
       return respond({ ok: true });
     }
     const token = (req.headers.get("Authorization") || "").replace(
@@ -174,17 +208,20 @@ export async function handleRequest(req: Request): Promise<Response> {
       { request_id: r.id, user_id: link.user.id, reviewer_id: user.id },
     );
     if (finalizeError) throw finalizeError;
-    // Approval is durable before Auth sends a passwordless link. Failed delivery may be retried via the login page.
-    const authClient = createClient(
-      env("SUPABASE_URL"),
-      env("SUPABASE_ANON_KEY"),
-      { auth: { persistSession: false } },
-    );
-    const { error: mailError } = await authClient.auth.signInWithOtp({
-      email: r.email,
-      options: { shouldCreateUser: false, emailRedirectTo: new URL("/account", env("APP_URL")).href },
-    });
-    return respond({ ok: true, email_sent: !mailError });
+    // Send the already generated link: an unconfirmed account must receive its
+    // verification link directly, instead of entering the public signup flow.
+    let emailSent = false;
+    try {
+      const { data: reservedId, error: reservationError } = await db.rpc("reserve_portal_login", { login_email: r.email });
+      if (reservationError) throw reservationError;
+      if (reservedId === link.user.id) {
+        await sendLoginLink(r.email, link.properties.action_link);
+        emailSent = true;
+      }
+    } catch {
+      console.error("Approved customer login email failed; approval remains saved");
+    }
+    return respond({ ok: true, email_sent: emailSent });
   } catch (error) {
     if (error instanceof RequestValidationError) return respond({ error: error.message }, 400);
     console.error("Portal operation failed", error);
