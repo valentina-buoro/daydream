@@ -1,3 +1,4 @@
+import CommerceAdmin from './commerce'
 import {useEffect, useState} from 'react'
 import { getClient, portal } from '../../lib/portal'
 import type { CustomerRequest } from '../../types/enquiry_types'
@@ -177,6 +178,7 @@ export default function AdminPage() {
       } catch (err) { setError(err instanceof Error ? err.message : 'Could not update request') }
       finally { setBusy(false) }
     }} />
+    <CommerceAdmin />
     {rows.filter(row => !row.notification_sent).map(row => <div className="mx-auto mb-3 text-sm" key={row.id}>
       Email notification not sent for {row.company}. <button className="underline" disabled={busy} onClick={async () => {
         setBusy(true); setError('')

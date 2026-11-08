@@ -1,3 +1,11 @@
 [functions.portal]
 verify_jwt = false
 entrypoint = "./functions/portal/index.ts"
+
+[functions.commerce]
+verify_jwt = false
+entrypoint = "./functions/commerce/index.ts"
+
+[functions.stripe-webhook]
+verify_jwt = false
+entrypoint = "./functions/stripe-webhook/index.ts"

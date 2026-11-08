@@ -11,7 +11,7 @@ export default function Routes (){
     return useRoutes([
         {path:"/", element: <LandingPage/>},
         {path: "/login", element: <Login/>},
-        {path: "/account", element: <Access><Account/></Access>},
+        {path: "/account/*", element: <Access><Account/></Access>},
         {path: "/enquiry", element: <EnquiryPage/>},
         {path:"/admin", element: <Access admin><Admin/></Access>}
     ])
