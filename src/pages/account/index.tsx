@@ -6,11 +6,11 @@ import { money } from "../../types/commerce";
 import type { DashboardData, Order, Profile } from "../../types/commerce";
 
 const inputClass =
-  "mt-2 block w-full rounded-xl border border-[#294c3a]/15 bg-white/70 px-4 py-3 text-sm outline-none focus:border-[#294c3a] focus:ring-2 focus:ring-[#294c3a]/10";
+  "mt-2 block w-full rounded-xl border border-[#0891b2]/15 bg-white/70 px-4 py-3 text-sm outline-none focus:border-[#0891b2] focus:ring-2 focus:ring-[#0891b2]/10";
 const buttonClass =
-  "inline-flex items-center justify-center gap-2 rounded-xl bg-[#294c3a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3f644e] disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex items-center justify-center gap-2 rounded-xl bg-[#0891b2] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0e7490] disabled:cursor-not-allowed disabled:opacity-40";
 const panelClass =
-  "rounded-3xl border border-white/60 bg-white/55 p-6 shadow-[0_12px_40px_#233c3408] backdrop-blur-xl sm:p-8";
+  "rounded-3xl border border-white/60 bg-white/55 p-6 shadow-[0_12px_40px_#164e6308] backdrop-blur-xl sm:p-8";
 const stages = ["received", "processing", "shipped", "delivered"] as const;
 function errorText(error: unknown) {
   return error instanceof Error
@@ -125,13 +125,13 @@ export default function Account() {
     }
   }
   return (
-    <div className="min-h-[90vh] w-full rounded-xl bg-[linear-gradient(135deg,#edf5ed_0%,#e3eeee_45%,#ebe4f6_100%)] text-left font-poppins text-[#233c34]">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#294c3a]/10 px-6 py-5 lg:px-10">
+    <div className="min-h-[90vh] w-full rounded-xl bg-[linear-gradient(135deg,#ecfeff_0%,#f7fee7_45%,#fff1e6_100%)] text-left font-poppins text-[#164e63]">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#0891b2]/10 px-6 py-5 lg:px-10">
         <Link
           to="/account"
           className="font-athletics text-xl font-extrabold tracking-tight"
         >
-          daydream<span className="ml-2 font-poppins text-xs font-normal tracking-[0.15em] text-[#657a70]">
+          daydream<span className="ml-2 font-poppins text-xs font-normal tracking-[0.15em] text-[#5f777b]">
             WHOLESALE
           </span>
         </Link>
@@ -155,8 +155,8 @@ export default function Account() {
         </div>
       </header>
       <div className="flex flex-col lg:flex-row">
-        <aside className="border-b border-[#294c3a]/10 p-4 lg:min-h-[80vh] lg:w-56 lg:shrink-0 lg:border-r lg:border-b-0 lg:px-5 lg:py-8">
-          <p className="mb-5 hidden px-3 text-[10px] font-semibold tracking-[0.2em] text-[#6b8074] lg:block">
+        <aside className="border-b border-[#0891b2]/10 p-4 lg:min-h-[80vh] lg:w-56 lg:shrink-0 lg:border-r lg:border-b-0 lg:px-5 lg:py-8">
+          <p className="mb-5 hidden px-3 text-[10px] font-semibold tracking-[0.2em] text-[#4d686c] lg:block">
             YOUR WORKSPACE
           </p>
           <nav
@@ -174,8 +174,8 @@ export default function Account() {
                 className={({ isActive }) =>
                   `whitespace-nowrap rounded-xl px-4 py-3 text-sm transition ${
                     isActive
-                      ? "bg-[#294c3a] text-white shadow-sm"
-                      : "text-[#5f7769] hover:bg-white/60"
+                      ? "bg-[#0891b2] text-white shadow-sm"
+                      : "text-[#547075] hover:bg-white/60"
                   }`}
               >
                 {label}
@@ -191,7 +191,7 @@ export default function Account() {
         <main className="min-w-0 flex-1 px-5 py-8 sm:px-8 lg:px-10">
           <div className="mb-8 flex items-start justify-between gap-4">
             <div>
-              <p className="mb-3 text-[10px] font-semibold tracking-[0.22em] text-[#6b8074]">
+              <p className="mb-3 text-[10px] font-semibold tracking-[0.22em] text-[#4d686c]">
                 THE DAYDREAM COMMUNITY
               </p>
               <h1 className="font-athletics text-3xl font-extrabold sm:text-4xl">
@@ -207,7 +207,7 @@ export default function Account() {
                   ? "Your orders."
                   : "Make yourself at home."}
               </h1>
-              <p className="mt-3 text-sm leading-6 text-[#657a70]">
+              <p className="mt-3 text-sm leading-6 text-[#5f777b]">
                 {page === "products"
                   ? "Build a mixed order of at least 10 cases. All prices in CAD."
                   : page === "orders"
@@ -218,7 +218,7 @@ export default function Account() {
               </p>
             </div>
             <button
-              className="shrink-0 rounded-full border border-[#294c3a]/15 bg-white/40 px-4 py-2 text-xs disabled:opacity-40"
+              className="shrink-0 rounded-full border border-[#0891b2]/15 bg-white/40 px-4 py-2 text-xs disabled:opacity-40"
               disabled={refreshing}
               onClick={() => void load()}
             >
@@ -256,7 +256,7 @@ export default function Account() {
                       ),
                     ]].map(([label, value]) => (
                       <div className={panelClass} key={label}>
-                        <p className="text-xs text-[#657a70]">{label}</p>
+                        <p className="text-xs text-[#5f777b]">{label}</p>
                         <p className="mt-4 text-4xl font-medium">{value}</p>
                       </div>
                     ))}
@@ -271,7 +271,7 @@ export default function Account() {
                       <h2 className="text-2xl font-semibold">
                         Your next daydream starts here.
                       </h2>
-                      <p className="mt-3 text-sm text-[#657a70]">
+                      <p className="mt-3 text-sm text-[#5f777b]">
                         Explore the drinks and mix a case order for your
                         business.
                       </p>
@@ -296,7 +296,7 @@ export default function Account() {
               {page === "products" && (
                 <>
                   {products.some((p) => p.is_placeholder) && (
-                    <p className="mb-6 rounded-xl bg-[#e7dcf2] px-4 py-3 text-xs leading-6 text-[#654a80]">
+                    <p className="mb-6 rounded-xl bg-[#ffedd5] px-4 py-3 text-xs leading-6 text-[#9a3412]">
                       Preview catalog · drinks, case sizes, and prices are
                       placeholders. Use Stripe test payment details only.
                     </p>
@@ -311,10 +311,10 @@ export default function Account() {
                           <div
                             className={`relative flex h-60 items-center justify-center ${
                               [
-                                "bg-[#e3ebda]",
-                                "bg-[#e6dff0]",
+                                "bg-[#cffafe]",
+                                "bg-[#ecfccb]",
                                 "bg-[#f4e2d7]",
-                                "bg-[#e8e8ca]",
+                                "bg-[#f7fee7]",
                               ][index % 4]
                             }`}
                           >
@@ -331,7 +331,7 @@ export default function Account() {
                             <h2 className="text-xl font-semibold">
                               {product.name}
                             </h2>
-                            <p className="mt-2 min-h-10 text-xs leading-5 text-[#657a70]">
+                            <p className="mt-2 min-h-10 text-xs leading-5 text-[#5f777b]">
                               {product.description}
                             </p>
                             <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -344,7 +344,7 @@ export default function Account() {
                               <label className="flex items-center gap-2 text-xs">
                                 Cases<input
                                   aria-label={`${product.name} cases`}
-                                  className="w-20 rounded-lg border border-[#294c3a]/15 bg-white/70 p-2 text-center"
+                                  className="w-20 rounded-lg border border-[#0891b2]/15 bg-white/70 p-2 text-center"
                                   type="number"
                                   min="0"
                                   max="1000"
@@ -391,7 +391,7 @@ export default function Account() {
                             >
                               <span>
                                 {p.name}
-                                <small className="mt-1 block text-[#657a70]">
+                                <small className="mt-1 block text-[#5f777b]">
                                   {cart[p.id]} cases × {money(p.price_cents)}
                                 </small>
                               </span>
@@ -399,32 +399,32 @@ export default function Account() {
                             </div>
                           ))
                           : (
-                            <p className="text-xs leading-6 text-[#657a70]">
+                            <p className="text-xs leading-6 text-[#5f777b]">
                               Add your favourite drinks to get started.
                             </p>
                           )}
                       </div>
-                      <div className="border-t border-[#294c3a]/15 pt-4">
+                      <div className="border-t border-[#0891b2]/15 pt-4">
                         <div className="flex justify-between text-sm">
                           <span>{caseCount} cases</span>
                           <strong>{money(total)} CAD</strong>
                         </div>
-                        <p className="mt-3 text-xs text-[#657a70]">
+                        <p className="mt-3 text-xs text-[#5f777b]">
                           {caseCount < 10
                             ? `Add ${
                               10 - caseCount
                             } more cases to reach the minimum.`
                             : "Your order meets the 10-case minimum."}
                         </p>
-                        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#294c3a]/10">
+                        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#84cc16]/15">
                           <div
-                            className="h-full rounded-full bg-[#668872] transition-all"
+                            className="h-full rounded-full bg-[#84cc16] transition-all"
                             style={{
                               width: `${Math.min(100, caseCount * 10)}%`,
                             }}
                           />
                         </div>
-                        <p className="my-4 text-[10px] leading-5 text-[#657a70]">
+                        <p className="my-4 text-[10px] leading-5 text-[#5f777b]">
                           Shipping address collected at checkout. No shipping
                           fee or tax is currently configured.
                         </p>
@@ -437,7 +437,7 @@ export default function Account() {
                             ? "Opening Stripe…"
                             : "Continue to Stripe →"}
                         </button>
-                        <p className="mt-3 text-center text-[10px] text-[#657a70]">
+                        <p className="mt-3 text-center text-[10px] text-[#5f777b]">
                           Secure payment with Stripe
                         </p>
                       </div>
@@ -514,7 +514,7 @@ function ProfileForm(
           value={profile.email}
           readOnly
         />
-        <span className="mt-2 block text-[10px] font-normal text-[#657a70]">
+        <span className="mt-2 block text-[10px] font-normal text-[#5f777b]">
           Your approved sign-in email. Contact the team to change it.
         </span>
       </label>
@@ -537,7 +537,7 @@ function ProfileForm(
           />
         </label>
       ))}
-      <p className="mb-6 text-xs leading-6 text-[#657a70]">
+      <p className="mb-6 text-xs leading-6 text-[#5f777b]">
         Delivery addresses are collected securely for each order at checkout.
       </p>
       <button disabled={busy} className={buttonClass}>
@@ -559,7 +559,7 @@ function OrderList(
     return (
       <div className={`${panelClass} text-center`}>
         <h2 className="text-xl font-semibold">Your first case is waiting.</h2>
-        <p className="my-4 text-sm text-[#657a70]">
+        <p className="my-4 text-sm text-[#5f777b]">
           Orders and delivery updates will appear here.
         </p>
         <Link className={buttonClass} to="/account/products">
@@ -577,7 +577,7 @@ function OrderList(
               <h2 className="font-semibold">
                 Order #{order.id.slice(0, 8).toUpperCase()}
               </h2>
-              <p className="mt-2 text-xs text-[#657a70]">
+              <p className="mt-2 text-xs text-[#5f777b]">
                 {new Date(order.created_at).toLocaleDateString("en-CA", {
                   month: "short",
                   day: "numeric",
@@ -586,7 +586,7 @@ function OrderList(
               </p>
             </div>
             <div className="text-right">
-              <span className="rounded-full bg-[#294c3a]/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider">
+              <span className="rounded-full bg-[#fed7aa]/60 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider">
                 {order.payment_status === "paid"
                   ? order.fulfillment_status
                   : order.payment_status === "pending"
@@ -598,7 +598,7 @@ function OrderList(
               </p>
             </div>
           </div>
-          <div className="my-5 border-y border-[#294c3a]/10 py-4 text-xs leading-7">
+          <div className="my-5 border-y border-[#0891b2]/10 py-4 text-xs leading-7">
             {order.items.map((item) => (
               <div key={item.product_id} className="flex justify-between gap-3">
                 <span>{item.name} · {item.quantity} cases</span>
@@ -616,8 +616,8 @@ function OrderList(
                   <div
                     className={`mb-3 h-1.5 rounded-full ${
                       stages.indexOf(order.fulfillment_status) >= index
-                        ? "bg-[#668872]"
-                        : "bg-[#294c3a]/10"
+                        ? "bg-[#84cc16]"
+                        : "bg-[#84cc16]/15"
                     }`}
                   />
                   {stage}

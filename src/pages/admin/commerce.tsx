@@ -4,7 +4,7 @@ import type { Order, Product } from "../../types/commerce";
 import { money } from "../../types/commerce";
 const field = "rounded-lg border border-white/40 bg-white/40 px-3 py-2 text-sm";
 const button =
-  "rounded-lg bg-[#294c3a] px-4 py-2 text-xs text-white disabled:opacity-40";
+  "rounded-lg bg-[#0891b2] px-4 py-2 text-xs text-white transition hover:bg-[#0e7490] disabled:opacity-40";
 export default function CommerceAdmin() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -52,7 +52,7 @@ export default function CommerceAdmin() {
     }
   }
   return (
-    <section className="my-8 rounded-3xl border border-white/20 bg-white/10 p-6 text-left text-[#233c34] backdrop-blur-xl sm:p-10">
+    <section className="my-8 rounded-3xl border border-white/20 bg-white/10 p-6 text-left text-[#164e63] backdrop-blur-xl sm:p-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold">Store management</h2>
         <button
