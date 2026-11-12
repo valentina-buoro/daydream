@@ -21,7 +21,7 @@ Deno.test('portal request and authorization boundaries', async (t) => {
   let sentAfterApproval = false;
   let eligible = true;
   let generatedCount = 0;
-  let loginEmailCount = 0;
+  let passwordEmailCount = 0;
   let redirectTo = '';
   const actionLink = 'https://project.example.com/auth/v1/verify?token=secret-test-token&type=signup';
   globalThis.fetch = async (input, init) => {
@@ -35,10 +35,10 @@ Deno.test('portal request and authorization boundaries', async (t) => {
     if (url.includes('/customer_requests')) return json({ ...submission, id: 'request-id', status: 'pending' });
     if (url.includes('api.resend.com')) {
       const body = JSON.parse(String(init?.body));
-      if (body.subject === 'Your Daydream sign-in link') {
+      if (body.subject === 'Create your Daydream password') {
         assert(body.to[0] === email);
         assert(body.text.includes(actionLink));
-        loginEmailCount++;
+        passwordEmailCount++;
         sentAfterApproval = finalized;
       }
       return json({}, mailFails ? 500 : 200);
@@ -87,27 +87,27 @@ Deno.test('portal request and authorization boundaries', async (t) => {
       for (const action of ['list', 'decide', 'retry-notification']) assert((await handleRequest(request({ action, id: 'request-id', status: 'approved' }, 'customer-token'))).status === 403);
       assert(!finalized);
     });
-    await t.step('finalizes approval before sending customer login email', async () => {
+    await t.step('finalizes approval before sending the password setup email', async () => {
       admin = true; mailFails = false;
       const response = await handleRequest(request({ action: 'decide', id: 'request-id', status: 'approved' }, 'admin-token'));
       assert(response.status === 200); assert(finalized); assert(sentAfterApproval);
       assert((await response.json()).email_sent === true);
     });
-    await t.step('approved unconfirmed customers receive the generated verification link from login', async () => {
-      const before = loginEmailCount;
-      const response = await handleRequest(request({ action: 'login', email }));
-      assert(response.status === 200 && loginEmailCount === before + 1);
-      assert(redirectTo === 'https://app.example.com/account');
+    await t.step('approved customers can request a secure password setup link', async () => {
+      const before = passwordEmailCount;
+      const response = await handleRequest(request({ action: 'password-link', email }));
+      assert(response.status === 200 && passwordEmailCount === before + 1);
+      assert(redirectTo === 'https://app.example.com/set-password?next=account');
       assert(!(await response.text()).includes('secret-test-token'));
     });
-    await t.step('localhost admin login uses only the allowed origin and fixed admin path', async () => {
-      const response = await handleRequest(new Request('https://example.com', { method: 'POST', headers: { origin: 'http://localhost:5173' }, body: JSON.stringify({ action: 'login', email, next: 'admin', redirectTo: 'https://attacker.example' }) }));
-      assert(response.status === 200 && redirectTo === 'http://localhost:5173/admin');
+    await t.step('localhost admin setup uses only the allowed origin and fixed password path', async () => {
+      const response = await handleRequest(new Request('https://example.com', { method: 'POST', headers: { origin: 'http://localhost:5173' }, body: JSON.stringify({ action: 'password-link', email, next: 'admin', redirectTo: 'https://attacker.example' }) }));
+      assert(response.status === 200 && redirectTo === 'http://localhost:5173/set-password?next=admin');
     });
     await t.step('ineligible and cooldown requests never generate or send links', async () => {
       eligible = false;
       const before = generatedCount;
-      const response = await handleRequest(request({ action: 'login', email }));
+      const response = await handleRequest(request({ action: 'password-link', email }));
       assert(response.status === 200 && generatedCount === before);
       eligible = true;
     });

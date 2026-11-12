@@ -37,18 +37,18 @@ async function notify(request: { id: string; name: string; company: string; emai
 /** Deliver the generated verification URL, including initial signup confirmation links.
  * Generating a link does not verify ownership; clicking it does. Never log the URL.
  */
-async function sendLoginLink(email: string, actionLink: string) {
+async function sendPasswordLink(email: string, actionLink: string) {
   if (!actionLink) throw new Error("Missing generated verification link");
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${env("RESEND_API_KEY")}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      from: env("EMAIL_FROM"), to: [email], subject: "Your Daydream sign-in link",
-      html: `<h2>Welcome to Daydream</h2><p>Use this single-use link to verify your email and sign in.</p><p><a href="${escape(actionLink)}">Sign in to Daydream</a></p><p>If you did not request this, you can ignore this email.</p>`,
-      text: `Verify your email and sign in to Daydream: ${actionLink}\nIf you did not request this, you can ignore this email.`,
+      from: env("EMAIL_FROM"), to: [email], subject: "Create your Daydream password",
+      html: `<h2>Welcome to Daydream</h2><p>Use this single-use link to verify your approved email and create or reset your password.</p><p><a href="${escape(actionLink)}">Create my password</a></p><p>If you did not request this, you can ignore this email.</p>`,
+      text: `Create or reset your Daydream password: ${actionLink}\nIf you did not request this, you can ignore this email.`,
     }),
   });
-  if (!response.ok) throw new Error(`Login email delivery failed (${response.status})`);
+  if (!response.ok) throw new Error(`Password email delivery failed (${response.status})`);
 }
 /** Handles public requests and authenticated admin actions. Authorization always runs on the server. */
 export async function handleRequest(req: Request): Promise<Response> {
@@ -113,7 +113,7 @@ export async function handleRequest(req: Request): Promise<Response> {
       }
       return respond({ ok: true });
     }
-    if (action === "login") {
+    if (action === "password-link") {
       if (typeof payload.email !== "string" || payload.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())) {
         return respond({ error: "Enter a valid email" }, 400);
       }
@@ -122,13 +122,16 @@ export async function handleRequest(req: Request): Promise<Response> {
       const { data: eligibleId, error: reservationError } = await db.rpc("reserve_portal_login", { login_email: email });
       if (reservationError) throw reservationError;
       if (!eligibleId) return respond({ ok: true });
-      const redirectTo = new URL(payload.next === "admin" ? "/admin" : "/account", allowed || env("APP_URL")).href;
+      const redirectTo = new URL(
+        `/set-password?next=${payload.next === "admin" ? "admin" : "account"}`,
+        allowed || env("APP_URL"),
+      ).href;
       const { data: link, error: linkError } = await db.auth.admin.generateLink({
         type: "magiclink", email, options: { redirectTo },
       });
-      if (linkError) throw new Error(`Login link generation failed (${linkError.code || linkError.status})`);
-      if (link.user.id !== eligibleId) throw new Error("Login identity mismatch");
-      await sendLoginLink(email, link.properties.action_link);
+      if (linkError) throw new Error(`Password link generation failed (${linkError.code || linkError.status})`);
+      if (link.user.id !== eligibleId) throw new Error("Password identity mismatch");
+      await sendPasswordLink(email, link.properties.action_link);
       return respond({ ok: true });
     }
     const token = (req.headers.get("Authorization") || "").replace(
@@ -200,7 +203,12 @@ export async function handleRequest(req: Request): Promise<Response> {
     const { data: link, error: linkError } = await db.auth.admin.generateLink({
       type: "magiclink",
       email: r.email,
-      options: { redirectTo: new URL("/account", env("APP_URL")).href },
+      options: {
+        redirectTo: new URL(
+          "/set-password?next=account",
+          env("APP_URL"),
+        ).href,
+      },
     });
     if (linkError) throw linkError;
     const { error: finalizeError } = await db.rpc(
@@ -215,11 +223,11 @@ export async function handleRequest(req: Request): Promise<Response> {
       const { data: reservedId, error: reservationError } = await db.rpc("reserve_portal_login", { login_email: r.email });
       if (reservationError) throw reservationError;
       if (reservedId === link.user.id) {
-        await sendLoginLink(r.email, link.properties.action_link);
+        await sendPasswordLink(r.email, link.properties.action_link);
         emailSent = true;
       }
     } catch {
-      console.error("Approved customer login email failed; approval remains saved");
+      console.error("Approved customer password email failed; approval remains saved");
     }
     return respond({ ok: true, email_sent: emailSent });
   } catch (error) {

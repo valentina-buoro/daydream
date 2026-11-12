@@ -61,7 +61,7 @@ export default function EventFlow({ onBack }:any) {
 
   if (submitted) {
     return (
-      <section className="result-page"><div className="result-card"><div className="success-mark">✦</div><p className="eyebrow">REQUEST RECEIVED</p><h1>Thanks for thinking of Daydream.</h1><p>We'll review your request. If approved, we'll email you a secure sign-in link.</p><p className="muted-note">No further action is needed.</p><button className="secondary-btn wide" onClick={onBack}>Back to Daydream</button></div></section>
+      <section className="result-page"><div className="result-card"><div className="success-mark">✦</div><p className="eyebrow">REQUEST RECEIVED</p><h1>Thanks for thinking of Daydream.</h1><p>We'll review your request. If approved, we'll email you a secure link to create your password.</p><p className="muted-note">No further action is needed.</p><button className="secondary-btn wide" onClick={onBack}>Back to Daydream</button></div></section>
     )
   }
   return (

@@ -173,7 +173,7 @@ export default function AdminPage() {
       setBusy(true); setError(''); setNotice('')
       try {
         const result = await portal<{ email_sent?: boolean }>({ action: 'decide', id: request.id, status })
-        setNotice(result.email_sent === false ? 'Approved, but the sign-in email could not be sent. The customer can request a new link on the login page.' : `Request ${status}.`)
+        setNotice(result.email_sent === false ? 'Approved, but the password setup email could not be sent. The customer can request a new setup link on the login page.' : `Request ${status}.`)
         await load()
       } catch (err) { setError(err instanceof Error ? err.message : 'Could not update request') }
       finally { setBusy(false) }

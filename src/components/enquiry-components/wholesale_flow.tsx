@@ -301,7 +301,7 @@ function WholesaleResult({ status, name, onBack }: any) {
           <h1>Your request has been received.</h1>
           <p>
             Our team will review your request and help find the best option for
-            your expected order volume. If approved, you'll receive a sign-in link.
+            your expected order volume. If approved, you'll receive a link to create your password.
           </p>
           <button className="secondary-btn wide" onClick={onBack}>
             Back to Daydream
@@ -339,7 +339,7 @@ function WholesaleResult({ status, name, onBack }: any) {
         <h1>You're on the list, {name}.</h1>
         <p>
           We'll review your business and follow up within 1–2 business days. If
-          approved, we'll email you an invitation to activate your wholesale
+          approved, we'll email you an invitation to create your password and activate your wholesale
           account.
         </p>
         <div className="benefit-row">

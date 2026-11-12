@@ -7,7 +7,7 @@ export default function RequestSent (){
           <p>
             Our team will review your request. Once approved,
             <br />
-            you can sign in using a link sent to your email.
+            you’ll receive a secure email link to create your password.
           </p>
           <button className="primary" onClick={() => {}}>
             Back to overview →
