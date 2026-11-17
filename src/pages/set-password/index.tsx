@@ -4,10 +4,14 @@ import type { Session } from "@supabase/supabase-js";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { getClient } from "../../lib/portal";
 
+const passwordField =
+  "block w-full rounded-xl border border-[#0891b2]/20 bg-white/80 p-3 pr-20 outline-none focus:border-[#0891b2] focus:ring-2 focus:ring-[#0891b2]/10";
+
 export default function SetPassword() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
   const [error, setError] = useState("");
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -80,25 +84,47 @@ export default function SetPassword() {
           <form onSubmit={save}>
             <label className="mb-4 block text-sm font-medium">
               New password
-              <input
-                className="mt-2 block w-full rounded-xl border border-[#0891b2]/20 bg-white/80 p-3 outline-none focus:border-[#0891b2] focus:ring-2 focus:ring-[#0891b2]/10"
-                name="password"
-                type="password"
-                minLength={8}
-                autoComplete="new-password"
-                required
-              />
+              <span className="relative mt-2 block">
+                <input
+                  className={passwordField}
+                  name="password"
+                  type={showPasswords ? "text" : "password"}
+                  minLength={8}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 text-xs font-semibold text-[#0e7490] underline-offset-4 hover:underline"
+                  aria-label={showPasswords ? "Hide passwords" : "Show passwords"}
+                  aria-pressed={showPasswords}
+                  onClick={() => setShowPasswords((visible) => !visible)}
+                >
+                  {showPasswords ? "Hide Password" : "Show Password"}
+                </button>
+              </span>
             </label>
             <label className="mb-5 block text-sm font-medium">
               Confirm password
-              <input
-                className="mt-2 block w-full rounded-xl border border-[#0891b2]/20 bg-white/80 p-3 outline-none focus:border-[#0891b2] focus:ring-2 focus:ring-[#0891b2]/10"
-                name="confirmation"
-                type="password"
-                minLength={8}
-                autoComplete="new-password"
-                required
-              />
+              <span className="relative mt-2 block">
+                <input
+                  className={passwordField}
+                  name="confirmation"
+                  type={showPasswords ? "text" : "password"}
+                  minLength={8}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 text-xs font-semibold text-[#0e7490] underline-offset-4 hover:underline"
+                  aria-label={showPasswords ? "Hide passwords" : "Show passwords"}
+                  aria-pressed={showPasswords}
+                  onClick={() => setShowPasswords((visible) => !visible)}
+                >
+                  {showPasswords ? "Hide Password" : "Show Password"}
+                </button>
+              </span>
             </label>
             <button
               className="rounded-xl bg-[#0891b2] px-5 py-3 font-semibold text-white transition hover:bg-[#0e7490] disabled:opacity-50"

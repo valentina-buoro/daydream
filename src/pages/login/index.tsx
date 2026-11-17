@@ -20,6 +20,7 @@ function errorMessage(error: unknown) {
 export default function Login() {
   const [busy, setBusy] = useState(false);
   const [setupBusy, setSetupBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [params] = useSearchParams();
@@ -93,13 +94,24 @@ export default function Login() {
         </label>
         <label className="mb-5 block text-sm font-medium">
           Password
-          <input
-            className={field}
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-          />
+          <span className="relative mt-2 block">
+            <input
+              className={`${field} mt-0 pr-20`}
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-3 text-xs font-semibold text-[#0e7490] underline-offset-4 hover:underline"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((visible) => !visible)}
+            >
+              {showPassword ? "Hide Password" : "Show Password"}
+            </button>
+          </span>
         </label>
         <button className={button} disabled={busy}>
           {busy ? "Signing in…" : "Sign in"}
